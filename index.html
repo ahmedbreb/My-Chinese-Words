@@ -11,14 +11,17 @@
             --text-primary: #e0e0e0;
             --text-secondary: #b0b0b0;
             --accent: #4a9eff;
-            --success: #4caf50;
-            --danger: #f44336;
+            --success: rgba(76, 175, 80, 0.2);
+            --success-border: #4caf50;
+            --danger: rgba(244, 67, 54, 0.2);
+            --danger-border: #f44336;
             --border: #333;
         }
 
         * {
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
+            user-select: none;
         }
 
         body {
@@ -26,21 +29,25 @@
             background-color: var(--bg-color);
             color: var(--text-primary);
             margin: 0;
-            padding: 20px;
+            padding: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-height: 100vh;
+            height: 100vh;
+            overflow: hidden;
         }
 
+        /* Input Section */
         #input-section {
             width: 100%;
             max-width: 500px;
+            padding: 20px;
+            margin-top: 40px;
         }
 
         textarea {
             width: 100%;
-            height: 200px;
+            height: 250px;
             background: var(--card-bg);
             color: var(--text-primary);
             border: 1px solid var(--border);
@@ -51,124 +58,171 @@
             resize: none;
         }
 
-        button {
+        .main-start-btn {
             width: 100%;
-            padding: 15px;
-            border-radius: 12px;
+            padding: 18px;
+            background: var(--accent);
+            color: white;
             border: none;
+            border-radius: 12px;
             font-weight: bold;
-            font-size: 16px;
-            cursor: pointer;
-            transition: opacity 0.2s;
+            font-size: 1.1rem;
         }
 
-        .primary-btn { background-color: var(--accent); color: white; }
-        .success-btn { background-color: var(--success); color: white; margin-bottom: 10px; }
-        .danger-btn { background-color: var(--danger); color: white; }
-        
-        /* New Back Button Style */
-        .secondary-btn { 
-            background-color: transparent; 
-            color: var(--text-secondary); 
-            border: 1px solid var(--border);
-            margin-top: 30px; 
-        }
-
+        /* Study Section */
         #study-section {
             display: none;
             width: 100%;
-            max-width: 500px;
+            height: 100%;
+            position: relative;
+        }
+
+        /* Small Top Left Back Button */
+        #back-btn {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: var(--card-bg);
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            z-index: 10;
+        }
+
+        .top-half {
+            height: 55vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
             text-align: center;
         }
 
-        .card {
-            background: var(--card-bg);
-            padding: 30px 20px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            margin-bottom: 20px;
-            min-height: 350px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
         .chinese-main {
-            font-size: 4rem;
+            font-size: 5rem;
             margin-bottom: 10px;
             font-weight: 600;
         }
 
-        .pinyin {
-            font-size: 1.5rem;
-            color: var(--accent);
-            margin-bottom: 5px;
+        .answer-area {
+            min-height: 150px;
         }
 
-        .translation {
-            font-size: 1.3rem;
-            margin-bottom: 20px;
-        }
-
+        .pinyin { font-size: 1.8rem; color: var(--accent); }
+        .translation { font-size: 1.4rem; margin: 10px 0; }
         .example-box {
             font-size: 0.9rem;
             color: var(--text-secondary);
+            max-width: 400px;
+            line-height: 1.4;
+        }
+
+        /* Bottom Interaction Zone */
+        #interaction-zone {
+            height: 45vh;
+            width: 100%;
             border-top: 1px solid var(--border);
-            padding-top: 15px;
-            text-align: left;
+            position: relative;
+        }
+
+        #reveal-overlay {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-color);
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            letter-spacing: 1px;
+            z-index: 5;
+        }
+
+        #grading-controls {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+
+        .grade-btn {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            transition: background 0.1s;
+        }
+
+        .no-btn { background: var(--danger); border-right: 1px solid var(--border); color: #ff8a80; }
+        .no-btn:active { background: rgba(244, 67, 54, 0.4); }
+
+        .yes-btn { background: var(--success); color: #b9f6ca; }
+        .yes-btn:active { background: rgba(76, 175, 80, 0.4); }
+
+        .counter-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
         }
 
         .mastery-tag {
-            display: inline-block;
             background: #ffd700;
-            color: #000;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-weight: bold;
-            font-size: 0.8rem;
-            margin-bottom: 15px;
-        }
-
-        .counter {
-            font-size: 0.9rem;
-            color: var(--text-secondary);
+            color: black;
+            padding: 2px 10px;
+            border-radius: 4px;
+            font-size: 0.7rem;
             margin-bottom: 10px;
         }
 
-        .hidden { display: none; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
     <div id="input-section">
-        <h2 style="text-align: center;">Input Chinese Words</h2>
-        <textarea id="word-input" placeholder="Paste your words here..."></textarea>
-        <button class="primary-btn" onclick="startStudy()">Start Practicing</button>
+        <h2 style="text-align: center;">New Session</h2>
+        <textarea id="word-input" placeholder="Paste words here..."></textarea>
+        <button class="main-start-btn" onclick="startStudy()">Start Practice</button>
     </div>
 
     <div id="study-section">
-        <div class="counter" id="progress-text">Recognition Count: 0/20</div>
-        <div class="card" id="word-card">
-            <div id="mastered-label" class="mastery-tag hidden">YOU MASTERED THIS WORD</div>
+        <button id="back-btn" onclick="goBack()">← Back</button>
+        <div id="progress-text" class="counter-badge">Count: 0/20</div>
+
+        <div class="top-half">
+            <div id="mastered-label" class="mastery-tag hidden">MASTERED</div>
             <div class="chinese-main" id="display-chinese"></div>
             
-            <div id="answer-content" class="hidden">
+            <div id="answer-content" class="answer-area hidden">
                 <div class="pinyin" id="display-pinyin"></div>
                 <div class="translation" id="display-translation"></div>
                 <div class="example-box" id="display-example"></div>
             </div>
         </div>
 
-        <div id="initial-controls">
-            <button class="primary-btn" onclick="showAnswer()">Show Answer</button>
-        </div>
+        <div id="interaction-zone">
+            <div id="reveal-overlay" onclick="showAnswer()">
+                TAP TO REVEAL
+            </div>
 
-        <div id="action-controls" class="hidden">
-            <button class="success-btn" onclick="recordResult(true)">I Recognized It</button>
-            <button class="danger-btn" onclick="recordResult(false)">I Didn't Recognize It</button>
+            <div id="grading-controls" class="hidden">
+                <div class="grade-btn no-btn" onclick="recordResult(false)">
+                    <span>✕</span>
+                    <small>Forgot</small>
+                </div>
+                <div class="grade-btn yes-btn" onclick="recordResult(true)">
+                    <span>✓</span>
+                    <small>Recognized</small>
+                </div>
+            </div>
         </div>
-
-        <button class="secondary-btn" onclick="goBack()">← Back to Input</button>
     </div>
 
     <script>
@@ -178,7 +232,7 @@
 
         function startStudy() {
             const input = document.getElementById('word-input').value.trim();
-            if (!input) return alert("Please input some words first.");
+            if (!input) return;
 
             const blocks = input.split(/\n\s*\n/);
             wordList = blocks.map(block => {
@@ -197,9 +251,8 @@
             showWord();
         }
 
-        // New function to go back
         function goBack() {
-            if (confirm("Go back to input? This will end the current session.")) {
+            if (confirm("Return to menu?")) {
                 document.getElementById('input-section').style.display = 'block';
                 document.getElementById('study-section').style.display = 'none';
             }
@@ -213,23 +266,20 @@
             document.getElementById('display-pinyin').innerText = word.pinyin;
             document.getElementById('display-translation').innerText = word.trans;
             document.getElementById('display-example').innerHTML = word.example || "";
-            document.getElementById('progress-text').innerText = `Recognition Count: ${score}/20`;
+            document.getElementById('progress-text').innerText = `Count: ${score}/20`;
             
-            if (score >= 20) {
-                document.getElementById('mastered-label').classList.remove('hidden');
-            } else {
-                document.getElementById('mastered-label').classList.add('hidden');
-            }
+            document.getElementById('mastered-label').classList.toggle('hidden', score < 20);
 
+            // Reset interaction states
             document.getElementById('answer-content').classList.add('hidden');
-            document.getElementById('initial-controls').classList.remove('hidden');
-            document.getElementById('action-controls').classList.add('hidden');
+            document.getElementById('reveal-overlay').classList.remove('hidden');
+            document.getElementById('grading-controls').classList.add('hidden');
         }
 
         function showAnswer() {
             document.getElementById('answer-content').classList.remove('hidden');
-            document.getElementById('initial-controls').classList.add('hidden');
-            document.getElementById('action-controls').classList.remove('hidden');
+            document.getElementById('reveal-overlay').classList.add('hidden');
+            document.getElementById('grading-controls').classList.remove('hidden');
         }
 
         function recordResult(recognized) {
@@ -239,18 +289,15 @@
             if (recognized) {
                 if (score < 20) score++;
             } else {
-                if (score > 10) score = Math.max(10, score - 1);
-                else score = Math.max(0, score - 1);
+                score = (score > 10) ? Math.max(10, score - 1) : Math.max(0, score - 1);
             }
 
             scores[word.char] = score;
             localStorage.setItem('chineseMasteryScores', JSON.stringify(scores));
 
-            currentIndex++;
-            if (currentIndex >= wordList.length) {
-                currentIndex = 0;
-                wordList.sort(() => Math.random() - 0.5);
-            }
+            currentIndex = (currentIndex + 1) % wordList.length;
+            if (currentIndex === 0) wordList.sort(() => Math.random() - 0.5);
+            
             showWord();
         }
     </script>
