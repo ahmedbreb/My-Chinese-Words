@@ -72,13 +72,13 @@
             position: relative;
         }
 
-        /* Minimal Top Bar */
+        /* Adjusted Top Bar to prevent cutoff */
         .top-bar {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
-            padding: 12px 15px;
+            padding: 20px 15px 10px 15px; /* Increased top padding */
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -88,7 +88,7 @@
         .left-controls {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
 
         #back-btn {
@@ -115,26 +115,27 @@
             justify-content: center;
             padding: 20px;
             text-align: center;
+            margin-top: 20px; /* Pushes content down away from bar */
         }
 
-        /* Reduced Character Size */
+        /* Reverted Large Sizes */
         .chinese-main {
-            font-size: 3.2rem;
-            margin-bottom: 8px;
-            font-weight: 500;
+            font-size: 5rem;
+            margin-bottom: 10px;
+            font-weight: 600;
         }
 
         .answer-area {
-            min-height: 120px;
+            min-height: 150px;
         }
 
-        .pinyin { font-size: 1.4rem; color: var(--accent); }
-        .translation { font-size: 1.1rem; margin: 6px 0; }
+        .pinyin { font-size: 1.8rem; color: var(--accent); }
+        .translation { font-size: 1.4rem; margin: 10px 0; }
         .example-box {
-            font-size: 0.8rem;
+            font-size: 0.9rem;
             color: var(--text-secondary);
-            max-width: 320px;
-            line-height: 1.3;
+            max-width: 400px;
+            line-height: 1.4;
         }
 
         #interaction-zone {
@@ -153,7 +154,7 @@
             justify-content: center;
             background: var(--bg-color);
             color: #444;
-            font-size: 0.8rem;
+            font-size: 1rem;
             letter-spacing: 3px;
             z-index: 5;
         }
@@ -170,6 +171,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            font-size: 1.5rem;
         }
 
         .no-btn { background: var(--danger); border-right: 1px solid var(--border); color: #8a3a3a; }
@@ -178,10 +180,10 @@
         .mastery-tag {
             background: #ffd700;
             color: black;
-            padding: 1px 6px;
-            border-radius: 3px;
-            font-size: 0.6rem;
-            margin-bottom: 8px;
+            padding: 2px 10px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            margin-bottom: 10px;
             font-weight: bold;
         }
 
@@ -217,7 +219,7 @@
         </div>
 
         <div id="interaction-zone">
-            <div id="reveal-overlay" onclick="showAnswer()">REVEAL</div>
+            <div id="reveal-overlay" onclick="showAnswer()">TAP TO REVEAL</div>
             <div id="grading-controls" class="hidden">
                 <div class="grade-btn no-btn" onclick="recordResult(false)">✕</div>
                 <div class="grade-btn yes-btn" onclick="recordResult(true)">✓</div>
