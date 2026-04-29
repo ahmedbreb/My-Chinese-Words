@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Chinese Word Master</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-primary: #e0e0e0;
+            --text-secondary: #b0b0b0;
+            --accent: #4a9eff;
+            --success: #4caf50;
+            --danger: #f44336;
+            --border: #333;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Input Section */
+        #input-section {
+            width: 100%;
+            max-width: 500px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 200px;
+            background: var(--card-bg);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 15px;
+            font-size: 16px;
+            margin-bottom: 15px;
+            resize: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            border: none;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .primary-btn { background-color: var(--accent); color: white; }
+        .success-btn { background-color: var(--success); color: white; margin-bottom: 10px; }
+        .danger-btn { background-color: var(--danger); color: white; }
+
+        /* Study Section */
+        #study-section {
+            display: none;
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 30px 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            margin-bottom: 20px;
+            min-height: 350px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .chinese-main {
+            font-size: 4rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .pinyin {
+            font-size: 1.5rem;
+            color: var(--accent);
+            margin-bottom: 5px;
+        }
+
+        .translation {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+        }
+
+        .example-box {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--border);
+            padding-top: 15px;
+            text-align: left;
+        }
+
+        .mastery-tag {
+            display: inline-block;
+            background: #ffd700;
+            color: #000;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.8rem;
+            margin-bottom: 15px;
+        }
+
+        .counter {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+
+        .hidden { display: none; }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="input-section">
+        <h2 style="text-align: center;">Input Chinese Words</h2>
+        <p style="font-size: 0.8rem; color: var(--text-secondary);">Paste words in order: Character, Pinyin, Translation, and Example details.</p>
+        <textarea id="word-input" placeholder="城市&#10;chéngshì&#10;city&#10;这个城市的夜景非常漂亮...&#10;Zhège chéngshì...&#10;The night view..."></textarea>
+        <button class="primary-btn" onclick="startStudy()">Start Practicing</button>
+    </div>
+
+    <div id="study-section">
+        <div class="counter" id="progress-text">Word Progress: 0/20</div>
+        <div class="card" id="word-card">
+            <div id="mastered-label" class="mastery-tag hidden">YOU MASTERED THIS WORD</div>
+            <div class="chinese-main" id="display-chinese"></div>
+            
+            <div id="answer-content" class="hidden">
+                <div class="pinyin" id="display-pinyin"></div>
+                <div class="translation" id="display-translation"></div>
+                <div class="example-box" id="display-example"></div>
+            </div>
+        </div>
+
+        <div id="initial-controls">
+            <button class="primary-btn" onclick="showAnswer()">Show Answer</button>
+        </div>
+
+        <div id="action-controls" class="hidden">
+            <button class="success-btn" onclick="recordResult(true)">I Recognized It</button>
+            <button class="danger-btn" onclick="recordResult(false)">I Didn't Recognize It</button>
+        </div>
+    </div>
+
+    <script>
+        let wordList = [];
+        let currentIndex = 0;
+        let scores = {}; // Persistent mastery scores
+
+        // Load scores from local storage
+        if (localStorage.getItem('chineseMasteryScores')) {
+            scores = JSON.parse(localStorage.getItem('chineseMasteryScores'));
+        }
+
+        function startStudy() {
+            const input = document.getElementById('word-input').value.trim();
+            if (!input) return alert("Please input some words first.");
+
+            const blocks = input.split(/\n\s*\n/); // Split by double newlines
+            wordList = blocks.map(block => {
+                const lines = block.split('\n').map(l => l.trim()).filter(l => l !== "");
+                return {
+                    char: lines[0],
+                    pinyin: lines[1],
+                    trans: lines[2],
+                    example: lines.slice(3).join('<br>') // Joins character, pinyin, and English of example
+                };
+            });
+
+            // Shuffle list
+            wordList.sort(() => Math.random() - 0.5);
+            
+            document.getElementById('input-section').style.display = 'none';
+            document.getElementById('study-section').style.display = 'block';
+            showWord();
+        }
+
+        function showWord() {
+            const word = wordList[currentIndex];
+            const score = scores[word.char] || 0;
+
+            document.getElementById('display-chinese').innerText = word.char;
+            document.getElementById('display-pinyin').innerText = word.pinyin;
+            document.getElementById('display-translation').innerText = word.trans;
+            document.getElementById('display-example').innerHTML = word.example || "";
+            
+            document.getElementById('progress-text').innerText = `Recognition Count: ${score}/20`;
+            
+            // Handle Mastered State
+            if (score >= 20) {
+                document.getElementById('mastered-label').classList.remove('hidden');
+            } else {
+                document.getElementById('mastered-label').classList.add('hidden');
+            }
+
+            // Reset visibility
+            document.getElementById('answer-content').classList.add('hidden');
+            document.getElementById('initial-controls').classList.remove('hidden');
+            document.getElementById('action-controls').classList.add('hidden');
+        }
+
+        function showAnswer() {
+            document.getElementById('answer-content').classList.remove('hidden');
+            document.getElementById('initial-controls').classList.add('hidden');
+            document.getElementById('action-controls').classList.remove('hidden');
+        }
+
+        function recordResult(recognized) {
+            const word = wordList[currentIndex];
+            let score = scores[word.char] || 0;
+
+            if (recognized) {
+                if (score < 20) score++;
+            } else {
+                // Scoring Logic: Floor is 0, but once 10 is reached, it can't drop below 10
+                if (score > 10) {
+                    score = Math.max(10, score - 1);
+                } else {
+                    score = Math.max(0, score - 1);
+                }
+            }
+
+            scores[word.char] = score;
+            localStorage.setItem('chineseMasteryScores', JSON.stringify(scores));
+
+            // Move to next word
+            currentIndex++;
+            if (currentIndex >= wordList.length) {
+                currentIndex = 0; // Loop back or reshuffle
+                wordList.sort(() => Math.random() - 0.5);
+            }
+            showWord();
+        }
+    </script>
+</body>
+</html>
