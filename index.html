@@ -72,13 +72,12 @@
             position: relative;
         }
 
-        /* Adjusted Top Bar to prevent cutoff */
         .top-bar {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
-            padding: 20px 15px 10px 15px; /* Increased top padding */
+            padding: 22px 15px 10px 15px; 
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -88,7 +87,7 @@
         .left-controls {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
 
         #back-btn {
@@ -115,10 +114,9 @@
             justify-content: center;
             padding: 20px;
             text-align: center;
-            margin-top: 20px; /* Pushes content down away from bar */
+            margin-top: 25px;
         }
 
-        /* Reverted Large Sizes */
         .chinese-main {
             font-size: 5rem;
             margin-bottom: 10px;
@@ -203,6 +201,7 @@
             <div class="left-controls">
                 <button id="back-btn" onclick="goBack()">BACK</button>
                 <div id="mastery-tracker" class="tiny-label">M: 0/0</div>
+                <div id="half-tracker" class="tiny-label">H: 0/0</div>
             </div>
             <div id="word-score-label" class="tiny-label">SCORE: 0/20</div>
         </div>
@@ -229,7 +228,7 @@
 
     <script>
         let wordList = [];
-        let currentIndex = 0;
+        let currentWord = null;
         let scores = JSON.parse(localStorage.getItem('chineseMasteryScores')) || {};
 
         function startStudy() {
@@ -247,11 +246,10 @@
                 };
             });
 
-            wordList.sort(() => Math.random() - 0.5);
             document.getElementById('input-section').style.display = 'none';
             document.getElementById('study-section').style.display = 'block';
-            updateMasteryTracker();
-            showWord();
+            updateStats();
+            pickNextWord();
         }
 
         function goBack() {
@@ -261,20 +259,54 @@
             }
         }
 
-        function updateMasteryTracker() {
-            const totalInList = wordList.length;
-            const masteredCount = wordList.filter(w => (scores[w.char] || 0) >= 20).length;
-            document.getElementById('mastery-tracker').innerText = `M: ${masteredCount}/${totalInList}`;
+        function updateStats() {
+            const total = wordList.length;
+            const mastered = wordList.filter(w => (scores[w.char] || 0) >= 20).length;
+            const half = wordList.filter(w => (scores[w.char] || 0) >= 10).length;
+            
+            document.getElementById('mastery-tracker').innerText = `M: ${mastered}/${total}`;
+            document.getElementById('half-tracker').innerText = `H: ${half}/${total}`;
+        }
+
+        function getActivePool() {
+            const tiers = [5, 10, 15, 20];
+            let targetTier = 20;
+
+            // Find the first tier milestone that not everyone has reached
+            for (let t of tiers) {
+                if (wordList.some(w => (scores[w.char] || 0) < t)) {
+                    targetTier = t;
+                    break;
+                }
+            }
+
+            // Filter for words below that specific target milestone
+            const pool = wordList.filter(w => (scores[w.char] || 0) < targetTier);
+            
+            // If everyone reached 20, show the full list
+            return pool.length > 0 ? pool : wordList;
+        }
+
+        function pickNextWord() {
+            const pool = getActivePool();
+            
+            // Prevent showing the same word twice in a row if pool > 1
+            let next;
+            do {
+                next = pool[Math.floor(Math.random() * pool.length)];
+            } while (pool.length > 1 && currentWord && next.char === currentWord.char);
+
+            currentWord = next;
+            showWord();
         }
 
         function showWord() {
-            const word = wordList[currentIndex];
-            const score = scores[word.char] || 0;
+            const score = scores[currentWord.char] || 0;
 
-            document.getElementById('display-chinese').innerText = word.char;
-            document.getElementById('display-pinyin').innerText = word.pinyin;
-            document.getElementById('display-translation').innerText = word.trans;
-            document.getElementById('display-example').innerHTML = word.example || "";
+            document.getElementById('display-chinese').innerText = currentWord.char;
+            document.getElementById('display-pinyin').innerText = currentWord.pinyin;
+            document.getElementById('display-translation').innerText = currentWord.trans;
+            document.getElementById('display-example').innerHTML = currentWord.example || "";
             document.getElementById('word-score-label').innerText = `SCORE: ${score}/20`;
             
             document.getElementById('mastered-label').classList.toggle('hidden', score < 20);
@@ -290,23 +322,20 @@
         }
 
         function recordResult(recognized) {
-            const word = wordList[currentIndex];
-            let score = scores[word.char] || 0;
+            let score = scores[currentWord.char] || 0;
 
             if (recognized) {
                 if (score < 20) score++;
             } else {
+                // Tiered floor logic remains
                 score = (score > 10) ? Math.max(10, score - 1) : Math.max(0, score - 1);
             }
 
-            scores[word.char] = score;
+            scores[currentWord.char] = score;
             localStorage.setItem('chineseMasteryScores', JSON.stringify(scores));
 
-            updateMasteryTracker();
-            currentIndex = (currentIndex + 1) % wordList.length;
-            if (currentIndex === 0) wordList.sort(() => Math.random() - 0.5);
-            
-            showWord();
+            updateStats();
+            pickNextWord();
         }
     </script>
 </body>
