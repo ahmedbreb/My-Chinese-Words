@@ -11,10 +11,8 @@
             --text-primary: #e0e0e0;
             --text-secondary: #b0b0b0;
             --accent: #4a9eff;
-            --success: rgba(76, 175, 80, 0.2);
-            --success-border: #4caf50;
-            --danger: rgba(244, 67, 54, 0.2);
-            --danger-border: #f44336;
+            --success: rgba(76, 175, 80, 0.15);
+            --danger: rgba(244, 67, 54, 0.15);
             --border: #333;
         }
 
@@ -75,16 +73,15 @@
             position: relative;
         }
 
-        /* Top Navigation Bar */
         .top-bar {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
-            padding: 15px;
+            padding: 15px 20px;
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 15px;
             z-index: 10;
         }
 
@@ -92,18 +89,16 @@
             background: var(--card-bg);
             color: var(--text-secondary);
             border: 1px solid var(--border);
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 0.9rem;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
         }
 
-        .session-stats {
-            font-size: 0.9rem;
-            color: var(--accent);
-            font-weight: bold;
-            background: rgba(74, 158, 255, 0.1);
-            padding: 8px 12px;
-            border-radius: 8px;
+        /* Subtle Progress Counters */
+        .subtle-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            letter-spacing: 0.5px;
         }
 
         .top-half {
@@ -151,8 +146,8 @@
             justify-content: center;
             background: var(--bg-color);
             color: var(--text-secondary);
-            font-size: 1.2rem;
-            letter-spacing: 1px;
+            font-size: 1rem;
+            letter-spacing: 2px;
             z-index: 5;
         }
 
@@ -174,14 +169,6 @@
         .no-btn { background: var(--danger); border-right: 1px solid var(--border); color: #ff8a80; }
         .yes-btn { background: var(--success); color: #b9f6ca; }
 
-        .word-score-badge {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-        }
-
         .mastery-tag {
             background: #ffd700;
             color: black;
@@ -189,6 +176,7 @@
             border-radius: 4px;
             font-size: 0.7rem;
             margin-bottom: 10px;
+            font-weight: bold;
         }
 
         .hidden { display: none !important; }
@@ -204,13 +192,12 @@
 
     <div id="study-section">
         <div class="top-bar">
-            <button id="back-btn" onclick="goBack()">← Back</button>
-            <div id="mastery-tracker" class="session-stats">Mastered: 0 / 0</div>
+            <button id="back-btn" onclick="goBack()">← BACK</button>
+            <div id="mastery-tracker" class="subtle-label">MASTERED: 0 / 0</div>
         </div>
 
-        <div id="progress-text" class="word-score-badge">Word Score: 0/20</div>
-
         <div class="top-half">
+            <div id="mastery-word-count" class="subtle-label" style="margin-bottom: 5px;">WORD SCORE: 0/20</div>
             <div id="mastered-label" class="mastery-tag hidden">MASTERED</div>
             <div class="chinese-main" id="display-chinese"></div>
             
@@ -224,8 +211,8 @@
         <div id="interaction-zone">
             <div id="reveal-overlay" onclick="showAnswer()">TAP TO REVEAL</div>
             <div id="grading-controls" class="hidden">
-                <div class="grade-btn no-btn" onclick="recordResult(false)">✕<br><small>Forgot</small></div>
-                <div class="grade-btn yes-btn" onclick="recordResult(true)">✓<br><small>Known</small></div>
+                <div class="grade-btn no-btn" onclick="recordResult(false)">✕<br><small>FORGOT</small></div>
+                <div class="grade-btn yes-btn" onclick="recordResult(true)">✓<br><small>KNOWN</small></div>
             </div>
         </div>
     </div>
@@ -267,7 +254,7 @@
         function updateMasteryTracker() {
             const totalInList = wordList.length;
             const masteredCount = wordList.filter(w => (scores[w.char] || 0) >= 20).length;
-            document.getElementById('mastery-tracker').innerText = `Mastered: ${masteredCount} / ${totalInList}`;
+            document.getElementById('mastery-tracker').innerText = `MASTERED: ${masteredCount} / ${totalInList}`;
         }
 
         function showWord() {
@@ -278,7 +265,7 @@
             document.getElementById('display-pinyin').innerText = word.pinyin;
             document.getElementById('display-translation').innerText = word.trans;
             document.getElementById('display-example').innerHTML = word.example || "";
-            document.getElementById('progress-text').innerText = `Word Score: ${score}/20`;
+            document.getElementById('mastery-word-count').innerText = `WORD SCORE: ${score}/20`;
             
             document.getElementById('mastered-label').classList.toggle('hidden', score < 20);
             document.getElementById('answer-content').classList.add('hidden');
