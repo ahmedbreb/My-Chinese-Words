@@ -33,7 +33,6 @@
             min-height: 100vh;
         }
 
-        /* Input Section */
         #input-section {
             width: 100%;
             max-width: 500px;
@@ -66,8 +65,15 @@
         .primary-btn { background-color: var(--accent); color: white; }
         .success-btn { background-color: var(--success); color: white; margin-bottom: 10px; }
         .danger-btn { background-color: var(--danger); color: white; }
+        
+        /* New Back Button Style */
+        .secondary-btn { 
+            background-color: transparent; 
+            color: var(--text-secondary); 
+            border: 1px solid var(--border);
+            margin-top: 30px; 
+        }
 
-        /* Study Section */
         #study-section {
             display: none;
             width: 100%;
@@ -130,25 +136,18 @@
         }
 
         .hidden { display: none; }
-
-        .button-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
     </style>
 </head>
 <body>
 
     <div id="input-section">
         <h2 style="text-align: center;">Input Chinese Words</h2>
-        <p style="font-size: 0.8rem; color: var(--text-secondary);">Paste words in order: Character, Pinyin, Translation, and Example details.</p>
-        <textarea id="word-input" placeholder="城市&#10;chéngshì&#10;city&#10;这个城市的夜景非常漂亮...&#10;Zhège chéngshì...&#10;The night view..."></textarea>
+        <textarea id="word-input" placeholder="Paste your words here..."></textarea>
         <button class="primary-btn" onclick="startStudy()">Start Practicing</button>
     </div>
 
     <div id="study-section">
-        <div class="counter" id="progress-text">Word Progress: 0/20</div>
+        <div class="counter" id="progress-text">Recognition Count: 0/20</div>
         <div class="card" id="word-card">
             <div id="mastered-label" class="mastery-tag hidden">YOU MASTERED THIS WORD</div>
             <div class="chinese-main" id="display-chinese"></div>
@@ -168,39 +167,42 @@
             <button class="success-btn" onclick="recordResult(true)">I Recognized It</button>
             <button class="danger-btn" onclick="recordResult(false)">I Didn't Recognize It</button>
         </div>
+
+        <button class="secondary-btn" onclick="goBack()">← Back to Input</button>
     </div>
 
     <script>
         let wordList = [];
         let currentIndex = 0;
-        let scores = {}; // Persistent mastery scores
-
-        // Load scores from local storage
-        if (localStorage.getItem('chineseMasteryScores')) {
-            scores = JSON.parse(localStorage.getItem('chineseMasteryScores'));
-        }
+        let scores = JSON.parse(localStorage.getItem('chineseMasteryScores')) || {};
 
         function startStudy() {
             const input = document.getElementById('word-input').value.trim();
             if (!input) return alert("Please input some words first.");
 
-            const blocks = input.split(/\n\s*\n/); // Split by double newlines
+            const blocks = input.split(/\n\s*\n/);
             wordList = blocks.map(block => {
                 const lines = block.split('\n').map(l => l.trim()).filter(l => l !== "");
                 return {
                     char: lines[0],
                     pinyin: lines[1],
                     trans: lines[2],
-                    example: lines.slice(3).join('<br>') // Joins character, pinyin, and English of example
+                    example: lines.slice(3).join('<br>')
                 };
             });
 
-            // Shuffle list
             wordList.sort(() => Math.random() - 0.5);
-            
             document.getElementById('input-section').style.display = 'none';
             document.getElementById('study-section').style.display = 'block';
             showWord();
+        }
+
+        // New function to go back
+        function goBack() {
+            if (confirm("Go back to input? This will end the current session.")) {
+                document.getElementById('input-section').style.display = 'block';
+                document.getElementById('study-section').style.display = 'none';
+            }
         }
 
         function showWord() {
@@ -211,17 +213,14 @@
             document.getElementById('display-pinyin').innerText = word.pinyin;
             document.getElementById('display-translation').innerText = word.trans;
             document.getElementById('display-example').innerHTML = word.example || "";
-            
             document.getElementById('progress-text').innerText = `Recognition Count: ${score}/20`;
             
-            // Handle Mastered State
             if (score >= 20) {
                 document.getElementById('mastered-label').classList.remove('hidden');
             } else {
                 document.getElementById('mastered-label').classList.add('hidden');
             }
 
-            // Reset visibility
             document.getElementById('answer-content').classList.add('hidden');
             document.getElementById('initial-controls').classList.remove('hidden');
             document.getElementById('action-controls').classList.add('hidden');
@@ -240,21 +239,16 @@
             if (recognized) {
                 if (score < 20) score++;
             } else {
-                // Scoring Logic: Floor is 0, but once 10 is reached, it can't drop below 10
-                if (score > 10) {
-                    score = Math.max(10, score - 1);
-                } else {
-                    score = Math.max(0, score - 1);
-                }
+                if (score > 10) score = Math.max(10, score - 1);
+                else score = Math.max(0, score - 1);
             }
 
             scores[word.char] = score;
             localStorage.setItem('chineseMasteryScores', JSON.stringify(scores));
 
-            // Move to next word
             currentIndex++;
             if (currentIndex >= wordList.length) {
-                currentIndex = 0; // Loop back or reshuffle
+                currentIndex = 0;
                 wordList.sort(() => Math.random() - 0.5);
             }
             showWord();
