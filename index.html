@@ -37,7 +37,6 @@
             overflow: hidden;
         }
 
-        /* Input Section */
         #input-section {
             width: 100%;
             max-width: 500px;
@@ -69,7 +68,6 @@
             font-size: 1.1rem;
         }
 
-        /* Study Section */
         #study-section {
             display: none;
             width: 100%;
@@ -77,18 +75,35 @@
             position: relative;
         }
 
-        /* Small Top Left Back Button */
-        #back-btn {
+        /* Top Navigation Bar */
+        .top-bar {
             position: absolute;
-            top: 15px;
-            left: 15px;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 10;
+        }
+
+        #back-btn {
             background: var(--card-bg);
             color: var(--text-secondary);
             border: 1px solid var(--border);
             padding: 8px 12px;
             border-radius: 8px;
             font-size: 0.9rem;
-            z-index: 10;
+        }
+
+        .session-stats {
+            font-size: 0.9rem;
+            color: var(--accent);
+            font-weight: bold;
+            background: rgba(74, 158, 255, 0.1);
+            padding: 8px 12px;
+            border-radius: 8px;
         }
 
         .top-half {
@@ -114,13 +129,12 @@
         .pinyin { font-size: 1.8rem; color: var(--accent); }
         .translation { font-size: 1.4rem; margin: 10px 0; }
         .example-box {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: var(--text-secondary);
             max-width: 400px;
             line-height: 1.4;
         }
 
-        /* Bottom Interaction Zone */
         #interaction-zone {
             height: 45vh;
             width: 100%;
@@ -155,16 +169,12 @@
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            transition: background 0.1s;
         }
 
         .no-btn { background: var(--danger); border-right: 1px solid var(--border); color: #ff8a80; }
-        .no-btn:active { background: rgba(244, 67, 54, 0.4); }
-
         .yes-btn { background: var(--success); color: #b9f6ca; }
-        .yes-btn:active { background: rgba(76, 175, 80, 0.4); }
 
-        .counter-badge {
+        .word-score-badge {
             position: absolute;
             top: 20px;
             right: 20px;
@@ -193,8 +203,12 @@
     </div>
 
     <div id="study-section">
-        <button id="back-btn" onclick="goBack()">← Back</button>
-        <div id="progress-text" class="counter-badge">Count: 0/20</div>
+        <div class="top-bar">
+            <button id="back-btn" onclick="goBack()">← Back</button>
+            <div id="mastery-tracker" class="session-stats">Mastered: 0 / 0</div>
+        </div>
+
+        <div id="progress-text" class="word-score-badge">Word Score: 0/20</div>
 
         <div class="top-half">
             <div id="mastered-label" class="mastery-tag hidden">MASTERED</div>
@@ -208,19 +222,10 @@
         </div>
 
         <div id="interaction-zone">
-            <div id="reveal-overlay" onclick="showAnswer()">
-                TAP TO REVEAL
-            </div>
-
+            <div id="reveal-overlay" onclick="showAnswer()">TAP TO REVEAL</div>
             <div id="grading-controls" class="hidden">
-                <div class="grade-btn no-btn" onclick="recordResult(false)">
-                    <span>✕</span>
-                    <small>Forgot</small>
-                </div>
-                <div class="grade-btn yes-btn" onclick="recordResult(true)">
-                    <span>✓</span>
-                    <small>Recognized</small>
-                </div>
+                <div class="grade-btn no-btn" onclick="recordResult(false)">✕<br><small>Forgot</small></div>
+                <div class="grade-btn yes-btn" onclick="recordResult(true)">✓<br><small>Known</small></div>
             </div>
         </div>
     </div>
@@ -248,6 +253,7 @@
             wordList.sort(() => Math.random() - 0.5);
             document.getElementById('input-section').style.display = 'none';
             document.getElementById('study-section').style.display = 'block';
+            updateMasteryTracker();
             showWord();
         }
 
@@ -258,6 +264,12 @@
             }
         }
 
+        function updateMasteryTracker() {
+            const totalInList = wordList.length;
+            const masteredCount = wordList.filter(w => (scores[w.char] || 0) >= 20).length;
+            document.getElementById('mastery-tracker').innerText = `Mastered: ${masteredCount} / ${totalInList}`;
+        }
+
         function showWord() {
             const word = wordList[currentIndex];
             const score = scores[word.char] || 0;
@@ -266,11 +278,9 @@
             document.getElementById('display-pinyin').innerText = word.pinyin;
             document.getElementById('display-translation').innerText = word.trans;
             document.getElementById('display-example').innerHTML = word.example || "";
-            document.getElementById('progress-text').innerText = `Count: ${score}/20`;
+            document.getElementById('progress-text').innerText = `Word Score: ${score}/20`;
             
             document.getElementById('mastered-label').classList.toggle('hidden', score < 20);
-
-            // Reset interaction states
             document.getElementById('answer-content').classList.add('hidden');
             document.getElementById('reveal-overlay').classList.remove('hidden');
             document.getElementById('grading-controls').classList.add('hidden');
@@ -295,6 +305,7 @@
             scores[word.char] = score;
             localStorage.setItem('chineseMasteryScores', JSON.stringify(scores));
 
+            updateMasteryTracker();
             currentIndex = (currentIndex + 1) % wordList.length;
             if (currentIndex === 0) wordList.sort(() => Math.random() - 0.5);
             
