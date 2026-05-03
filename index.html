@@ -35,16 +35,30 @@
             overflow: hidden;
         }
 
+        /* Input Section */
         #input-section {
             width: 100%;
             max-width: 500px;
             padding: 20px;
-            margin-top: 40px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .clear-btn {
+            align-self: flex-end;
+            background: transparent;
+            color: var(--danger-border, #f44336);
+            border: 1px solid var(--border);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            margin-bottom: 10px;
+            text-transform: uppercase;
         }
 
         textarea {
             width: 100%;
-            height: 250px;
+            height: 300px;
             background: var(--card-bg);
             color: var(--text-primary);
             border: 1px solid var(--border);
@@ -53,6 +67,7 @@
             font-size: 16px;
             margin-bottom: 15px;
             resize: none;
+            user-select: text; /* Allow pasting */
         }
 
         .main-start-btn {
@@ -63,8 +78,10 @@
             border: none;
             border-radius: 12px;
             font-weight: bold;
+            font-size: 1.1rem;
         }
 
+        /* Study Section */
         #study-section {
             display: none;
             width: 100%;
@@ -77,7 +94,7 @@
             top: 0;
             left: 0;
             width: 100%;
-            padding: 22px 15px 10px 15px; 
+            padding: 25px 15px 10px 15px; 
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -114,7 +131,7 @@
             justify-content: center;
             padding: 20px;
             text-align: center;
-            margin-top: 25px;
+            margin-top: 30px;
         }
 
         .chinese-main {
@@ -191,7 +208,8 @@
 <body>
 
     <div id="input-section">
-        <h2 style="text-align: center; font-size: 1.2rem;">New Session</h2>
+        <button class="clear-btn" onclick="resetApp()">Clear & Reset All</button>
+        <h2 style="text-align: center; font-size: 1.2rem; margin-top: 0;">New Session</h2>
         <textarea id="word-input" placeholder="Paste words here..."></textarea>
         <button class="main-start-btn" onclick="startStudy()">Start Practice</button>
     </div>
@@ -229,11 +247,20 @@
     <script>
         let wordList = [];
         let currentWord = null;
+        
+        // Load Scores and previous input from LocalStorage
         let scores = JSON.parse(localStorage.getItem('chineseMasteryScores')) || {};
+        const savedText = localStorage.getItem('lastWordInput');
+        if (savedText) {
+            document.getElementById('word-input').value = savedText;
+        }
 
         function startStudy() {
             const input = document.getElementById('word-input').value.trim();
             if (!input) return;
+
+            // Save the input text so it's there next time
+            localStorage.setItem('lastWordInput', input);
 
             const blocks = input.split(/\n\s*\n/);
             wordList = blocks.map(block => {
@@ -253,9 +280,15 @@
         }
 
         function goBack() {
-            if (confirm("End session?")) {
-                document.getElementById('input-section').style.display = 'block';
-                document.getElementById('study-section').style.display = 'none';
+            document.getElementById('input-section').style.display = 'block';
+            document.getElementById('study-section').style.display = 'none';
+        }
+
+        function resetApp() {
+            if (confirm("This will clear the current list and your text. Your mastery scores will be kept. Proceed?")) {
+                document.getElementById('word-input').value = '';
+                localStorage.removeItem('lastWordInput');
+                wordList = [];
             }
         }
 
@@ -272,7 +305,6 @@
             const tiers = [5, 10, 15, 20];
             let targetTier = 20;
 
-            // Find the first tier milestone that not everyone has reached
             for (let t of tiers) {
                 if (wordList.some(w => (scores[w.char] || 0) < t)) {
                     targetTier = t;
@@ -280,17 +312,12 @@
                 }
             }
 
-            // Filter for words below that specific target milestone
             const pool = wordList.filter(w => (scores[w.char] || 0) < targetTier);
-            
-            // If everyone reached 20, show the full list
             return pool.length > 0 ? pool : wordList;
         }
 
         function pickNextWord() {
             const pool = getActivePool();
-            
-            // Prevent showing the same word twice in a row if pool > 1
             let next;
             do {
                 next = pool[Math.floor(Math.random() * pool.length)];
@@ -302,7 +329,6 @@
 
         function showWord() {
             const score = scores[currentWord.char] || 0;
-
             document.getElementById('display-chinese').innerText = currentWord.char;
             document.getElementById('display-pinyin').innerText = currentWord.pinyin;
             document.getElementById('display-translation').innerText = currentWord.trans;
@@ -323,11 +349,9 @@
 
         function recordResult(recognized) {
             let score = scores[currentWord.char] || 0;
-
             if (recognized) {
                 if (score < 20) score++;
             } else {
-                // Tiered floor logic remains
                 score = (score > 10) ? Math.max(10, score - 1) : Math.max(0, score - 1);
             }
 
