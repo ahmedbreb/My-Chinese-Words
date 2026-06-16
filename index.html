@@ -5,45 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Chinese Word Master</title>
     <style>
-        :root {
-            --bg-color: #121212;
-            --card-bg: #1e1e1e;
-            --text-primary: #e0e0e0;
-            --text-secondary: #888;
-            --accent: #4a9eff;
-            --success: rgba(76, 175, 80, 0.12);
-            --danger: rgba(244, 67, 54, 0.12);
-            --border: #2a2a2a;
-        }
-
+        :root { --bg-color: #121212; --card-bg: #1e1e1e; --text-primary: #e0e0e0; --text-secondary: #888; --accent: #4a9eff; --success: rgba(76, 175, 80, 0.12); --danger: rgba(244, 67, 54, 0.12); --border: #2a2a2a; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-color); color: var(--text-primary); margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; height: 100vh; overflow: hidden; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg-color); color: var(--text-primary); margin: 0; padding: 0; height: 100vh; overflow: hidden; }
 
-        #input-section { width: 100%; max-width: 500px; padding: 20px; margin-top: 40px; }
-        .btn-row { display: flex; gap: 10px; margin-bottom: 10px; }
-        .secondary-btn { flex: 1; background: #333; color: #fff; border: none; padding: 8px; border-radius: 6px; font-size: 0.7rem; }
-        textarea { width: 100%; height: 250px; background: var(--card-bg); color: var(--text-primary); border: 1px solid var(--border); border-radius: 12px; padding: 15px; font-size: 16px; margin-bottom: 15px; resize: none; }
+        #input-section { padding: 20px; }
+        .btn-row { display: flex; gap: 10px; margin-bottom: 15px; }
+        .secondary-btn { flex: 1; background: #333; color: #fff; border: none; padding: 10px; border-radius: 6px; font-size: 0.75rem; }
+        textarea { width: 100%; height: 300px; background: var(--card-bg); color: var(--text-primary); border: 1px solid var(--border); border-radius: 12px; padding: 15px; margin-bottom: 15px; resize: none; font-size: 16px; }
         .main-start-btn { width: 100%; padding: 18px; background: var(--accent); color: white; border: none; border-radius: 12px; font-weight: bold; }
 
-        #study-section { display: none; width: 100%; height: 100%; position: relative; }
-        .top-bar { position: absolute; top: 0; left: 0; width: 100%; padding: 25px 15px 10px 15px; display: flex; justify-content: space-between; align-items: center; z-index: 10; }
+        #study-section { display: none; height: 100%; flex-direction: column; }
+        .top-bar { height: 60px; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; border-bottom: 1px solid var(--border); }
         .left-controls { display: flex; align-items: center; gap: 10px; }
-        #back-btn { background: transparent; color: var(--text-secondary); border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; }
-        .tiny-label { font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; }
+        #back-btn { background: transparent; color: var(--text-secondary); border: 1px solid var(--border); padding: 5px 10px; border-radius: 4px; font-size: 0.7rem; }
+        .tiny-label { font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; }
 
-        .top-half { height: 55vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; margin-top: 30px; }
-        #mastery-star { font-size: 1.2rem; color: #ffd700; margin-bottom: 5px; height: 25px; }
-        .chinese-main { font-size: 5rem; margin-bottom: 10px; font-weight: 600; }
-        .answer-area { min-height: 150px; }
-        .pinyin { font-size: 1.8rem; color: var(--accent); }
-        .translation { font-size: 1.4rem; margin: 10px 0; }
-        .example-box { font-size: 0.9rem; color: var(--text-secondary); max-width: 400px; line-height: 1.4; }
+        .top-half { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
+        #mastery-star { font-size: 1.5rem; height: 30px; margin-bottom: 5px; }
+        .chinese-main { font-size: 5rem; font-weight: 600; margin-bottom: 10px; }
+        .answer-area { height: 160px; }
+        .pinyin { font-size: 1.5rem; color: var(--accent); }
+        .translation { font-size: 1.2rem; margin: 10px 0; }
+        .example-box { font-size: 0.9rem; color: var(--text-secondary); }
 
-        #interaction-zone { height: 45vh; width: 100%; border-top: 1px solid var(--border); position: relative; }
-        #reveal-overlay { position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: var(--bg-color); color: #444; font-size: 1rem; letter-spacing: 3px; z-index: 5; }
-        #grading-controls { display: flex; width: 100%; height: 100%; }
-        .grade-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 1.5rem; }
-        .no-btn { background: var(--danger); border-right: 1px solid var(--border); color: #8a3a3a; }
+        #interaction-zone { height: 200px; border-top: 1px solid var(--border); position: relative; }
+        #reveal-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: var(--bg-color); color: #444; font-size: 1rem; letter-spacing: 3px; z-index: 5; }
+        #grading-controls { display: flex; height: 100%; }
+        .grade-btn { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 2rem; }
+        .no-btn { background: var(--danger); color: #8a3a3a; }
         .yes-btn { background: var(--success); color: #3a8a3a; }
         .hidden { display: none !important; }
     </style>
@@ -72,7 +62,6 @@
         <div class="top-half">
             <div id="mastery-star"></div>
             <div class="chinese-main" id="display-chinese"></div>
-            
             <div id="answer-content" class="answer-area hidden">
                 <div class="pinyin" id="display-pinyin"></div>
                 <div class="translation" id="display-translation"></div>
@@ -108,55 +97,38 @@
                 return { char: l[0], pinyin: l[1], trans: l[2], example: l.slice(3).join('<br>') };
             });
             document.getElementById('input-section').style.display = 'none';
-            document.getElementById('study-section').style.display = 'block';
-            updateStats();
-            pickNextWord();
+            document.getElementById('study-section').style.display = 'flex';
+            updateStats(); pickNextWord();
         }
 
         function updateStats() {
             const total = wordList.length;
-            const mastered = wordList.filter(w => (scores[w.char] || 0) >= 20).length;
-            const half = wordList.filter(w => (scores[w.char] || 0) >= 10).length;
-            document.getElementById('mastery-tracker').innerText = `M: ${mastered}/${total}`;
-            document.getElementById('half-tracker').innerText = `H: ${half}/${total}`;
+            document.getElementById('mastery-tracker').innerText = `M: ${wordList.filter(w => (scores[w.char] || 0) >= 20).length}/${total}`;
+            document.getElementById('half-tracker').innerText = `H: ${wordList.filter(w => (scores[w.char] || 0) >= 10).length}/${total}`;
         }
 
         function pickNextWord() {
             const r = Math.random();
             const learning = wordList.filter(w => (scores[w.char] || 0) < 10);
             const half = wordList.filter(w => (scores[w.char] || 0) >= 10 && (scores[w.char] || 0) < 20);
-            const mastered = wordList.filter(w => (scores[w.char] || 0) >= 20);
-
-            let pool;
-            if (learning.length > 0 && r < 0.8) pool = learning;
-            else if (half.length > 0 && r < 0.95) pool = half;
-            else pool = wordList;
-            
+            let pool = (learning.length > 0 && r < 0.8) ? learning : (half.length > 0 && r < 0.95 ? half : wordList);
             currentWord = pool[Math.floor(Math.random() * pool.length)];
             showWord();
         }
 
         function recordResult(recognized) {
             let s = scores[currentWord.char] || 0, str = streaks[currentWord.char] || 0;
-            if (recognized) {
-                str++;
-                if (str === 4) { s = (s < 10) ? 10 : 20; str = 0; }
-                else if (s < 20) s++;
-            } else { str = 0; s = (s >= 10) ? Math.max(10, s - 2) : Math.max(0, s - 1); }
+            if (recognized) { str++; if (str === 4) { s = (s < 10) ? 10 : 20; str = 0; } else if (s < 20) s++; } 
+            else { str = 0; s = (s >= 10) ? Math.max(10, s - 2) : Math.max(0, s - 1); }
             scores[currentWord.char] = s; streaks[currentWord.char] = str;
             localStorage.setItem('chineseMasteryScores', JSON.stringify(scores));
             localStorage.setItem('chineseStreaks', JSON.stringify(streaks));
-            updateStats();
-            pickNextWord();
+            updateStats(); pickNextWord();
         }
 
         function showWord() {
             const s = scores[currentWord.char] || 0;
-            const starDiv = document.getElementById('mastery-star');
-            if (s >= 20) starDiv.innerText = '★'; 
-            else if (s >= 10) starDiv.innerText = '✧'; 
-            else starDiv.innerText = '';
-
+            document.getElementById('mastery-star').innerText = s >= 20 ? '★' : (s >= 10 ? '✧' : '');
             document.getElementById('display-chinese').innerText = currentWord.char;
             document.getElementById('display-pinyin').innerText = currentWord.pinyin;
             document.getElementById('display-translation').innerText = currentWord.trans;
