@@ -1,255 +1,11 @@
-<!DOCTYPE html>
-<html lang="zh">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Chinese Word Master</title>
-    <style>
-        :root {
-            --bg-color: #121212;
-            --card-bg: #1e1e1e;
-            --text-primary: #e0e0e0;
-            --text-secondary: #888;
-            --accent: #4a9eff;
-            --success: rgba(76, 175, 80, 0.12);
-            --danger: rgba(244, 67, 54, 0.12);
-            --border: #2a2a2a;
-        }
-
-        * {
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-            user-select: none;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-primary);
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        /* Input Section */
-        #input-section {
-            width: 100%;
-            max-width: 500px;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .clear-btn {
-            align-self: flex-end;
-            background: transparent;
-            color: var(--danger-border, #f44336);
-            border: 1px solid var(--border);
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 0.7rem;
-            margin-bottom: 10px;
-            text-transform: uppercase;
-        }
-
-        textarea {
-            width: 100%;
-            height: 300px;
-            background: var(--card-bg);
-            color: var(--text-primary);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 15px;
-            font-size: 16px;
-            margin-bottom: 15px;
-            resize: none;
-            user-select: text; /* Allow pasting */
-        }
-
-        .main-start-btn {
-            width: 100%;
-            padding: 18px;
-            background: var(--accent);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-weight: bold;
-            font-size: 1.1rem;
-        }
-
-        /* Study Section */
-        #study-section {
-            display: none;
-            width: 100%;
-            height: 100%;
-            position: relative;
-        }
-
-        .top-bar {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            padding: 25px 15px 10px 15px; 
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 10;
-        }
-
-        .left-controls {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        #back-btn {
-            background: transparent;
-            color: var(--text-secondary);
-            border: 1px solid var(--border);
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.7rem;
-        }
-
-        .tiny-label {
-            font-size: 0.65rem;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-        }
-
-        .top-half {
-            height: 55vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            text-align: center;
-            margin-top: 30px;
-        }
-
-        .chinese-main {
-            font-size: 5rem;
-            margin-bottom: 10px;
-            font-weight: 600;
-        }
-
-        .answer-area {
-            min-height: 150px;
-        }
-
-        .pinyin { font-size: 1.8rem; color: var(--accent); }
-        .translation { font-size: 1.4rem; margin: 10px 0; }
-        .example-box {
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-            max-width: 400px;
-            line-height: 1.4;
-        }
-
-        #interaction-zone {
-            height: 45vh;
-            width: 100%;
-            border-top: 1px solid var(--border);
-            position: relative;
-        }
-
-        #reveal-overlay {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--bg-color);
-            color: #444;
-            font-size: 1rem;
-            letter-spacing: 3px;
-            z-index: 5;
-        }
-
-        #grading-controls {
-            display: flex;
-            width: 100%;
-            height: 100%;
-        }
-
-        .grade-btn {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-        }
-
-        .no-btn { background: var(--danger); border-right: 1px solid var(--border); color: #8a3a3a; }
-        .yes-btn { background: var(--success); color: #3a8a3a; }
-
-        .mastery-tag {
-            background: #ffd700;
-            color: black;
-            padding: 2px 10px;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            margin-bottom: 10px;
-            font-weight: bold;
-        }
-
-        .hidden { display: none !important; }
-    </style>
-</head>
-<body>
-
-    <div id="input-section">
-        <button class="clear-btn" onclick="resetApp()">Clear & Reset All</button>
-        <h2 style="text-align: center; font-size: 1.2rem; margin-top: 0;">New Session</h2>
-        <textarea id="word-input" placeholder="Paste words here..."></textarea>
-        <button class="main-start-btn" onclick="startStudy()">Start Practice</button>
-    </div>
-
-    <div id="study-section">
-        <div class="top-bar">
-            <div class="left-controls">
-                <button id="back-btn" onclick="goBack()">BACK</button>
-                <div id="mastery-tracker" class="tiny-label">M: 0/0</div>
-                <div id="half-tracker" class="tiny-label">H: 0/0</div>
-            </div>
-            <div id="word-score-label" class="tiny-label">SCORE: 0/20</div>
-        </div>
-
-        <div class="top-half">
-            <div id="mastered-label" class="mastery-tag hidden">MASTERED</div>
-            <div class="chinese-main" id="display-chinese"></div>
-            
-            <div id="answer-content" class="answer-area hidden">
-                <div class="pinyin" id="display-pinyin"></div>
-                <div class="translation" id="display-translation"></div>
-                <div class="example-box" id="display-example"></div>
-            </div>
-        </div>
-
-        <div id="interaction-zone">
-            <div id="reveal-overlay" onclick="showAnswer()">TAP TO REVEAL</div>
-            <div id="grading-controls" class="hidden">
-                <div class="grade-btn no-btn" onclick="recordResult(false)">✕</div>
-                <div class="grade-btn yes-btn" onclick="recordResult(true)">✓</div>
-            </div>
-        </div>
-    </div>
-
     <script>
         let wordList = [];
         let currentWord = null;
         
-        // Load Scores and previous input from LocalStorage
+        // We now store both total 'score' and current 'streak'
         let scores = JSON.parse(localStorage.getItem('chineseMasteryScores')) || {};
+        let streaks = JSON.parse(localStorage.getItem('chineseStreaks')) || {};
+
         const savedText = localStorage.getItem('lastWordInput');
         if (savedText) {
             document.getElementById('word-input').value = savedText;
@@ -259,7 +15,6 @@
             const input = document.getElementById('word-input').value.trim();
             if (!input) return;
 
-            // Save the input text so it's there next time
             localStorage.setItem('lastWordInput', input);
 
             const blocks = input.split(/\n\s*\n/);
@@ -285,7 +40,7 @@
         }
 
         function resetApp() {
-            if (confirm("This will clear the current list and your text. Your mastery scores will be kept. Proceed?")) {
+            if (confirm("Clear current list? Mastery scores will be kept.")) {
                 document.getElementById('word-input').value = '';
                 localStorage.removeItem('lastWordInput');
                 wordList = [];
@@ -349,18 +104,33 @@
 
         function recordResult(recognized) {
             let score = scores[currentWord.char] || 0;
+            let streak = streaks[currentWord.char] || 0;
+
             if (recognized) {
-                if (score < 20) score++;
+                streak++;
+                
+                // Streak Logic
+                if (streak === 5) {
+                    // Jump to next major milestone (10, 15, or 20)
+                    if (score < 10) score = 10;
+                    else if (score < 20) score = 20;
+                    streak = 0; // Reset streak after reward
+                } else {
+                    if (score < 20) score++;
+                }
             } else {
+                streak = 0; // Reset streak on mistake, but keep total score
+                // Penalty only applies if below 10
                 score = (score > 10) ? Math.max(10, score - 1) : Math.max(0, score - 1);
             }
 
+            // Save updates
             scores[currentWord.char] = score;
+            streaks[currentWord.char] = streak;
             localStorage.setItem('chineseMasteryScores', JSON.stringify(scores));
+            localStorage.setItem('chineseStreaks', JSON.stringify(streaks));
 
             updateStats();
             pickNextWord();
         }
     </script>
-</body>
-</html>
