@@ -5,34 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Chinese Word Master</title>
     <style>
-        :root {
-            --bg-color: #121212;
-            --card-bg: #1e1e1e;
-            --text-primary: #e0e0e0;
-            --text-secondary: #888;
-            --accent: #4a9eff;
-            --success: rgba(76, 175, 80, 0.12);
-            --danger: rgba(244, 67, 54, 0.12);
-            --border: #2a2a2a;
-        }
-
+        :root { --bg-color: #121212; --card-bg: #1e1e1e; --text-primary: #e0e0e0; --text-secondary: #888; --accent: #4a9eff; --success: rgba(76, 175, 80, 0.12); --danger: rgba(244, 67, 54, 0.12); --border: #2a2a2a; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-color); color: var(--text-primary); margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; height: 100vh; overflow: hidden; }
 
-        #input-section { width: 100%; max-width: 500px; padding: 20px; margin-top: 40px; }
-        .clear-btn { align-self: flex-end; background: transparent; color: #f44336; border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; font-size: 0.7rem; margin-bottom: 10px; }
-        textarea { width: 100%; height: 300px; background: var(--card-bg); color: var(--text-primary); border: 1px solid var(--border); border-radius: 12px; padding: 15px; font-size: 16px; margin-bottom: 15px; resize: none; }
+        #input-section { width: 100%; max-width: 500px; padding: 20px; display: flex; flex-direction: column; }
+        .btn-row { display: flex; gap: 10px; margin-bottom: 10px; }
+        .secondary-btn { flex: 1; background: #333; color: #fff; border: none; padding: 8px; border-radius: 6px; font-size: 0.7rem; }
+        textarea { width: 100%; height: 250px; background: var(--card-bg); color: var(--text-primary); border: 1px solid var(--border); border-radius: 12px; padding: 15px; font-size: 16px; margin-bottom: 15px; resize: none; }
         .main-start-btn { width: 100%; padding: 18px; background: var(--accent); color: white; border: none; border-radius: 12px; font-weight: bold; }
 
         #study-section { display: none; width: 100%; height: 100%; position: relative; }
         .top-bar { position: absolute; top: 0; left: 0; width: 100%; padding: 25px 15px 10px 15px; display: flex; justify-content: space-between; align-items: center; z-index: 10; }
-        .left-controls { display: flex; align-items: center; gap: 10px; }
-        #back-btn { background: transparent; color: var(--text-secondary); border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; }
-        .tiny-label { font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; }
-
         .top-half { height: 55vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; margin-top: 30px; }
-        /* Mastery Star */
-        #mastery-star { font-size: 1rem; color: #ffd700; opacity: 0.5; margin-bottom: 5px; height: 20px; }
+        
+        #mastery-star { font-size: 1.5rem; margin-bottom: 5px; height: 30px; }
         .chinese-main { font-size: 5rem; margin-bottom: 10px; font-weight: 600; }
         .answer-area { min-height: 150px; }
         .pinyin { font-size: 1.8rem; color: var(--accent); }
@@ -49,35 +36,29 @@
     </style>
 </head>
 <body>
-
     <div id="input-section">
-        <button class="clear-btn" onclick="resetApp()">Clear & Reset All</button>
-        <h2 style="text-align: center; font-size: 1.2rem; margin-top: 0;">New Session</h2>
+        <div class="btn-row">
+            <button class="secondary-btn" onclick="backupData()">Backup</button>
+            <button class="secondary-btn" onclick="restoreData()">Restore</button>
+        </div>
         <textarea id="word-input" placeholder="Paste words here..."></textarea>
         <button class="main-start-btn" onclick="startStudy()">Start Practice</button>
     </div>
 
     <div id="study-section">
         <div class="top-bar">
-            <div class="left-controls">
-                <button id="back-btn" onclick="goBack()">BACK</button>
-                <div id="mastery-tracker" class="tiny-label">M: 0/0</div>
-                <div id="half-tracker" class="tiny-label">H: 0/0</div>
-            </div>
-            <div id="word-score-label" class="tiny-label">SCORE: 0/20</div>
+            <button style="background:none; border:1px solid #333; color:#888; padding:5px 10px; border-radius:4px; font-size:0.7rem;" onclick="goBack()">BACK</button>
+            <div id="word-score-label" style="font-size:0.7rem; color:#888; text-transform:uppercase;">SCORE: 0/20</div>
         </div>
-
         <div class="top-half">
-            <div id="mastery-star" class="hidden">★</div>
+            <div id="mastery-star"></div>
             <div class="chinese-main" id="display-chinese"></div>
-            
             <div id="answer-content" class="answer-area hidden">
                 <div class="pinyin" id="display-pinyin"></div>
                 <div class="translation" id="display-translation"></div>
                 <div class="example-box" id="display-example"></div>
             </div>
         </div>
-
         <div id="interaction-zone">
             <div id="reveal-overlay" onclick="showAnswer()">TAP TO REVEAL</div>
             <div id="grading-controls" class="hidden">
@@ -88,77 +69,76 @@
     </div>
 
     <script>
-        let wordList = [];
-        let currentWord = null;
+        let wordList = [], currentWord = null;
         let scores = JSON.parse(localStorage.getItem('chineseMasteryScores')) || {};
         let streaks = JSON.parse(localStorage.getItem('chineseStreaks')) || {};
 
-        const savedText = localStorage.getItem('lastWordInput');
-        if (savedText) document.getElementById('word-input').value = savedText;
+        function backupData() { navigator.clipboard.writeText(JSON.stringify({scores, streaks})).then(() => alert("Progress copied!")); }
+        function restoreData() {
+            const input = prompt("Paste your backup data here:");
+            if (input) { const p = JSON.parse(input); scores = p.scores; streaks = p.streaks; alert("Restored!"); }
+        }
 
         function startStudy() {
             const input = document.getElementById('word-input').value.trim();
             if (!input) return;
-            localStorage.setItem('lastWordInput', input);
-            wordList = input.split(/\n\s*\n/).map(block => {
-                const lines = block.split('\n').map(l => l.trim()).filter(l => l !== "");
-                return { char: lines[0], pinyin: lines[1], trans: lines[2], example: lines.slice(3).join('<br>') };
+            wordList = input.split(/\n\s*\n/).map(b => {
+                const l = b.split('\n');
+                return { char: l[0], pinyin: l[1], trans: l[2], example: l.slice(3).join('<br>') };
             });
             document.getElementById('input-section').style.display = 'none';
             document.getElementById('study-section').style.display = 'block';
-            updateStats();
             pickNextWord();
         }
 
-        function goBack() { document.getElementById('input-section').style.display = 'block'; document.getElementById('study-section').style.display = 'none'; }
-        function resetApp() { if (confirm("Clear all text?")) { document.getElementById('word-input').value = ''; localStorage.removeItem('lastWordInput'); wordList = []; } }
-
-        function updateStats() {
-            const total = wordList.length;
-            if (total === 0) return;
-            const mastered = wordList.filter(w => (scores[w.char] || 0) >= 20).length;
-            const half = wordList.filter(w => (scores[w.char] || 0) >= 10).length;
-            document.getElementById('mastery-tracker').innerText = `M: ${mastered}/${total}`;
-            document.getElementById('half-tracker').innerText = `H: ${half}/${total}`;
-        }
-
         function pickNextWord() {
-            // Include everything in rotation
-            currentWord = wordList[Math.floor(Math.random() * wordList.length)];
+            const r = Math.random();
+            // 80% weight for words < 10, 15% for words 10-19, 5% for words 20
+            const learning = wordList.filter(w => (scores[w.char] || 0) < 10);
+            const half = wordList.filter(w => (scores[w.char] || 0) >= 10 && (scores[w.char] || 0) < 20);
+            const mastered = wordList.filter(w => (scores[w.char] || 0) >= 20);
+
+            let pool;
+            if (learning.length > 0 && r < 0.8) pool = learning;
+            else if (half.length > 0 && r < 0.95) pool = half;
+            else pool = wordList;
+            
+            currentWord = pool[Math.floor(Math.random() * pool.length)];
             showWord();
         }
 
+        function recordResult(recognized) {
+            let s = scores[currentWord.char] || 0, str = streaks[currentWord.char] || 0;
+            if (recognized) {
+                str++;
+                if (str === 4) { s = (s < 10) ? 10 : 20; str = 0; }
+                else if (s < 20) s++;
+            } else { str = 0; s = (s >= 10) ? Math.max(10, s - 2) : Math.max(0, s - 1); }
+            scores[currentWord.char] = s; streaks[currentWord.char] = str;
+            localStorage.setItem('chineseMasteryScores', JSON.stringify(scores));
+            localStorage.setItem('chineseStreaks', JSON.stringify(streaks));
+            pickNextWord();
+        }
+
         function showWord() {
-            const score = scores[currentWord.char] || 0;
+            const s = scores[currentWord.char] || 0;
+            const starDiv = document.getElementById('mastery-star');
+            if (s >= 20) starDiv.innerText = '★'; 
+            else if (s >= 10) starDiv.innerText = '✧'; 
+            else starDiv.innerText = '';
+
             document.getElementById('display-chinese').innerText = currentWord.char;
             document.getElementById('display-pinyin').innerText = currentWord.pinyin;
             document.getElementById('display-translation').innerText = currentWord.trans;
-            document.getElementById('display-example').innerHTML = currentWord.example || "";
-            document.getElementById('word-score-label').innerText = `SCORE: ${score}/20`;
-            
-            // Show star if previously mastered
-            document.getElementById('mastery-star').classList.toggle('hidden', score < 20);
-            
+            document.getElementById('display-example').innerHTML = currentWord.example;
+            document.getElementById('word-score-label').innerText = `SCORE: ${s}/20`;
             document.getElementById('answer-content').classList.add('hidden');
             document.getElementById('reveal-overlay').classList.remove('hidden');
             document.getElementById('grading-controls').classList.add('hidden');
         }
 
         function showAnswer() { document.getElementById('answer-content').classList.remove('hidden'); document.getElementById('reveal-overlay').classList.add('hidden'); document.getElementById('grading-controls').classList.remove('hidden'); }
-
-        function recordResult(recognized) {
-            let score = scores[currentWord.char] || 0;
-            let streak = streaks[currentWord.char] || 0;
-            if (recognized) {
-                streak++;
-                if (streak === 5) { score = (score < 10) ? 10 : 20; streak = 0; }
-                else if (score < 20) score++;
-            } else { streak = 0; score = (score > 10) ? Math.max(10, score - 1) : Math.max(0, score - 1); }
-            scores[currentWord.char] = score; streaks[currentWord.char] = streak;
-            localStorage.setItem('chineseMasteryScores', JSON.stringify(scores));
-            localStorage.setItem('chineseStreaks', JSON.stringify(streaks));
-            updateStats(); pickNextWord();
-        }
+        function goBack() { document.getElementById('input-section').style.display = 'block'; document.getElementById('study-section').style.display = 'none'; }
     </script>
 </body>
 </html>
